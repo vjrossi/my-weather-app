@@ -12,6 +12,10 @@ function GlobeWeather() {
   const [weather, setWeather] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
   const [location, setLocation] = useState('');
+  const [favorites, setFavorites] = useState(() => {
+    const saved = localStorage.getItem('favorites');
+    return saved ? JSON.parse(saved) : [];
+  });
 
   useEffect(() => {
     async function getUserLocation() {
@@ -59,6 +63,10 @@ function GlobeWeather() {
     fetchWeather(userLocation[1], userLocation[0]);
   }, [userLocation]);
 
+  useEffect(() => {
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }, [favorites]);
+
   const fetchWeather = async (lat, lon) => {
     const API_KEY = '9a90a19b627e8512a82bee7d66a0b793';
     const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
@@ -81,7 +89,7 @@ function GlobeWeather() {
           current: currentData,
           forecast: forecastData
         });
-        setLocation(currentData.name); // Set the location name
+        setLocation(currentData.name);
       }
     } catch (error) {
       console.error('Error fetching weather data:', error);
@@ -126,57 +134,126 @@ function GlobeWeather() {
     return brightness > 125 ? '#000000' : '#FFFFFF';
   };
 
+  const addToFavorites = () => {
+    if (weather && location && !favorites.some(fav => fav.name === location)) {
+      const newFavorite = {
+        name: location,
+        lat: weather.current.coord.lat,
+        lon: weather.current.coord.lon
+      };
+      setFavorites([...favorites, newFavorite]);
+    }
+  };
+
+  const removeFromFavorites = (favName) => {
+    setFavorites(favorites.filter(fav => fav.name !== favName));
+  };
+
+  const fetchFavoriteWeather = (favorite) => {
+    fetchWeather(favorite.lat, favorite.lon);
+  };
+
   return (
-    <div>
-      <div ref={mapContainer} style={{ width: '100%', height: '500px' }} />
-      {weather ? (
-        <>
-          <div className="weather-info" style={{
-            backgroundColor: getWeatherColor(weather.current.weather[0].icon),
-            color: getTextColor(getWeatherColor(weather.current.weather[0].icon)),
-            padding: '20px',
-            borderRadius: '8px',
-            margin: '20px auto',
-            maxWidth: '500px',
-            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            fontFamily: 'Arial, sans-serif',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
-                Weather in {location} {/* Display the location name */}
-              </h2>
-              <p style={{ fontSize: '14px', margin: 0 }}>
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric' })}
-              </p>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
-              <img
-                src={getWeatherIcon(weather.current.weather[0].icon)}
-                alt="Weather Icon"
-                style={{ width: '64px', height: '64px', marginRight: '20px' }}
-              />
-              <div>
-                <h1 style={{ fontSize: '48px', fontWeight: 'normal', margin: '0' }}>
-                  {Math.round(weather.current.main.temp)}°C
-                </h1>
-                <p style={{ fontSize: '16px', margin: '5px 0', textTransform: 'capitalize' }}>
-                  {weather.current.weather[0].description}
-                </p>
+    <div style={{ padding: '0 20px 20px' }}> {/* Add padding to the main container */}
+      <div ref={mapContainer} style={{ width: '100%', height: '500px', marginBottom: '20px' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ flex: '1', marginRight: '20px' }}>
+          {weather ? (
+            <>
+              <div className="weather-info" style={{
+                backgroundColor: getWeatherColor(weather.current.weather[0].icon),
+                color: getTextColor(getWeatherColor(weather.current.weather[0].icon)),
+                padding: '20px',
+                borderRadius: '8px',
+                margin: '20px auto',
+                maxWidth: '500px',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                fontFamily: 'Arial, sans-serif',
+                marginBottom: '20px' // Add margin to separate from forecast
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
+                    Weather in {location}
+                  </h2>
+                  <p style={{ fontSize: '14px', margin: 0 }}>
+                    {new Date().toLocaleDateString('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric' })}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
+                  <img
+                    src={getWeatherIcon(weather.current.weather[0].icon)}
+                    alt="Weather Icon"
+                    style={{ width: '64px', height: '64px', marginRight: '20px' }}
+                  />
+                  <div>
+                    <h1 style={{ fontSize: '48px', fontWeight: 'normal', margin: '0' }}>
+                      {Math.round(weather.current.main.temp)}°C
+                    </h1>
+                    <p style={{ fontSize: '16px', margin: '5px 0', textTransform: 'capitalize' }}>
+                      {weather.current.weather[0].description}
+                    </p>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
+                  <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Precipitation: {weather.current.rain ? `${weather.current.rain['1h']}mm` : '0mm'}</p>
+                  <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Humidity: {weather.current.main.humidity}%</p>
+                  <p style={{ margin: '0', fontWeight: 'bold' }}>Wind: {Math.round(weather.current.wind.speed * 3.6)} km/h</p>
+                </div>
+                <button onClick={addToFavorites} style={{
+                  padding: '5px 10px',
+                  marginTop: '10px',
+                  backgroundColor: '#4CAF50',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}>
+                  Add to Favorites
+                </button>
               </div>
+              <WeeklyForecast forecast={weather.forecast} />
+            </>
+          ) : (
+            <div className="mt-3">
+              <p>Click on the map to get weather information for that location.</p>
             </div>
-            <div style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
-              <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Precipitation: {weather.current.rain ? `${weather.current.rain['1h']}mm` : '0mm'}</p>
-              <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Humidity: {weather.current.main.humidity}%</p>
-              <p style={{ margin: '0', fontWeight: 'bold' }}>Wind: {Math.round(weather.current.wind.speed * 3.6)} km/h</p>
-            </div>
-          </div>
-          <WeeklyForecast forecast={weather.forecast} />
-        </>
-      ) : (
-        <div className="mt-3">
-          <p>Click on the map to get weather information for that location.</p>
+          )}
         </div>
-      )}
+        <div className="favorites" style={{
+          width: '250px',
+          padding: '10px',
+          marginTop: '20px',
+          backgroundColor: '#f0f0f0',
+          borderRadius: '8px',
+          alignSelf: 'flex-start'
+        }}>
+          <h3>Favorite Locations</h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
+            {favorites.map((fav, index) => (
+              <li key={index} style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '5px'
+              }}>
+                <span onClick={() => fetchFavoriteWeather(fav)} style={{ cursor: 'pointer' }}>
+                  {fav.name}
+                </span>
+                <button onClick={() => removeFromFavorites(fav.name)} style={{
+                  padding: '2px 5px',
+                  backgroundColor: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer'
+                }}>
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 }
