@@ -1,8 +1,5 @@
 import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap-icons/font/bootstrap-icons.css';
-import { HashRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import WeatherApp from './components/WeatherApp';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import GlobeWeather from './components/GlobeWeather';
 
 function App() {
