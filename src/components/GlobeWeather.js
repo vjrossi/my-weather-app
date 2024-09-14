@@ -67,23 +67,33 @@ function GlobeWeather() {
   }, [favorites]);
 
   const fetchWeather = async (lat, lon) => {
+    const API_KEY = '9a90a19b627e8512a82bee7d66a0b793';
+    const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+    const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`;
+
     try {
-      const response = await fetch(`/api/weather?lat=${lat}&lon=${lon}`);
-      if (!response.ok) {
-        throw new Error('Weather data not available');
+      const [currentResponse, forecastResponse] = await Promise.all([
+        fetch(currentWeatherUrl),
+        fetch(forecastUrl)
+      ]);
+      const currentData = await currentResponse.json();
+      const forecastData = await forecastResponse.json();
+
+      if (currentData.cod === '404' || forecastData.cod === '404') {
+        console.error('Location not found');
+        setWeather(null);
+        setLocation('');
+      } else {
+        setWeather({
+          current: currentData,
+          forecast: forecastData
+        });
+        setLocation(currentData.name);
       }
-      const data = await response.json();
-      
-      // Add error checking for the weather data
-      if (!data || !data.current || !data.current.weather || !data.current.weather[0]) {
-        throw new Error('Invalid weather data structure');
-      }
-      
-      setWeather(data);
     } catch (error) {
-      console.error('Error fetching weather:', error);
+      console.error('Error fetching weather data:', error);
       setWeather(null);
-      // Optionally, set an error state here to display to the user
+      setLocation('');
     }
   };
 
@@ -143,13 +153,13 @@ function GlobeWeather() {
   };
 
   return (
-    <div id="globe-weather-container" style={{ padding: '0 20px 20px' }}>
-      <div id="map-container" ref={mapContainer} style={{ width: '100%', height: '500px', marginBottom: '20px' }} />
-      <div id="content-container" style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div id="weather-container" style={{ flex: '1', marginRight: '20px' }}>
-          {weather && weather.current && weather.current.weather && weather.current.weather[0] ? (
+    <div style={{ padding: '0 20px 20px' }}> {/* Add padding to the main container */}
+      <div ref={mapContainer} style={{ width: '100%', height: '500px', marginBottom: '20px' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ flex: '1', marginRight: '20px' }}>
+          {weather ? (
             <>
-              <div id="current-weather" className="weather-info" style={{
+              <div className="weather-info" style={{
                 backgroundColor: getWeatherColor(weather.current.weather[0].icon),
                 color: getTextColor(getWeatherColor(weather.current.weather[0].icon)),
                 padding: '20px',
@@ -158,38 +168,37 @@ function GlobeWeather() {
                 maxWidth: '500px',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 fontFamily: 'Arial, sans-serif',
-                marginBottom: '20px'
+                marginBottom: '20px' // Add margin to separate from forecast
               }}>
-                <div id="weather-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                  <h2 id="weather-location" style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
                     Weather in {location}
                   </h2>
-                  <p id="weather-date" style={{ fontSize: '14px', margin: 0 }}>
+                  <p style={{ fontSize: '14px', margin: 0 }}>
                     {new Date().toLocaleDateString('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric' })}
                   </p>
                 </div>
-                <div id="weather-main" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
                   <img
-                    id="weather-icon"
                     src={getWeatherIcon(weather.current.weather[0].icon)}
                     alt="Weather Icon"
                     style={{ width: '64px', height: '64px', marginRight: '20px' }}
                   />
-                  <div id="weather-temp-desc">
-                    <h1 id="weather-temp" style={{ fontSize: '48px', fontWeight: 'normal', margin: '0' }}>
+                  <div>
+                    <h1 style={{ fontSize: '48px', fontWeight: 'normal', margin: '0' }}>
                       {Math.round(weather.current.main.temp)}°C
                     </h1>
-                    <p id="weather-desc" style={{ fontSize: '16px', margin: '5px 0', textTransform: 'capitalize' }}>
+                    <p style={{ fontSize: '16px', margin: '5px 0', textTransform: 'capitalize' }}>
                       {weather.current.weather[0].description}
                     </p>
                   </div>
                 </div>
-                <div id="weather-details" style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
-                  <p id="weather-precipitation" style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Precipitation: {weather.current.rain ? `${weather.current.rain['1h']}mm` : '0mm'}</p>
-                  <p id="weather-humidity" style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Humidity: {weather.current.main.humidity}%</p>
-                  <p id="weather-wind" style={{ margin: '0', fontWeight: 'bold' }}>Wind: {Math.round(weather.current.wind.speed * 3.6)} km/h</p>
+                <div style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
+                  <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Precipitation: {weather.current.rain ? `${weather.current.rain['1h']}mm` : '0mm'}</p>
+                  <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Humidity: {weather.current.main.humidity}%</p>
+                  <p style={{ margin: '0', fontWeight: 'bold' }}>Wind: {Math.round(weather.current.wind.speed * 3.6)} km/h</p>
                 </div>
-                <button id="add-favorite-btn" onClick={addToFavorites} style={{
+                <button onClick={addToFavorites} style={{
                   padding: '5px 10px',
                   marginTop: '10px',
                   backgroundColor: '#4CAF50',
@@ -201,15 +210,15 @@ function GlobeWeather() {
                   Add to Favorites
                 </button>
               </div>
-              {weather.forecast && <WeeklyForecast forecast={weather.forecast} />}
+              <WeeklyForecast forecast={weather.forecast} />
             </>
           ) : (
-            <div id="weather-placeholder" className="mt-3">
+            <div className="mt-3">
               <p>Click on the map to get weather information for that location.</p>
             </div>
           )}
         </div>
-        <div id="favorites-container" className="favorites" style={{
+        <div className="favorites" style={{
           width: '30%',
           paddingLeft: '15px',
           paddingRight: '15px',
@@ -219,18 +228,18 @@ function GlobeWeather() {
           alignSelf: 'flex-start'
         }}>
           <h3>Favourite Locations</h3>
-          <ul id="favorites-list" style={{ listStyleType: 'none', padding: 0 }}>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
             {favorites.map((fav, index) => (
-              <li key={index} id={`favorite-item-${index}`} style={{
+              <li key={index} style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 marginBottom: '5px'
               }}>
-                <span id={`favorite-name-${index}`} onClick={() => fetchFavoriteWeather(fav)} style={{ cursor: 'pointer' }}>
+                <span onClick={() => fetchFavoriteWeather(fav)} style={{ cursor: 'pointer' }}>
                   {fav.name}
                 </span>
-                <button id={`remove-favorite-${index}`} onClick={() => removeFromFavorites(fav.name)} style={{
+                <button onClick={() => removeFromFavorites(fav.name)} style={{
                   padding: '2px 5px',
                   backgroundColor: '#f44336',
                   color: 'white',
