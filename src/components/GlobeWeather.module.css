@@ -1,0 +1,11 @@
+.cityName {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin: 0 0 10px 0;
+    color: inherit;
+  }
+  
+  .temperature {
+    font-size: 1.2em;
+    margin: 5px 0;
+  }
