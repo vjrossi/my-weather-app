@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import styles from './GlobeWeather.module.css';
 import WeeklyForecast from './WeeklyForecast';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoidmpyb3NzaSIsImEiOiJjbHNjb2lzeTQwczJ3MmpxbWh4d2E2YmUwIn0.AvyOfpd5nrPWWMGhpdaZxw';
@@ -16,7 +15,6 @@ function GlobeWeather() {
     const saved = localStorage.getItem('favorites');
     return saved ? JSON.parse(saved) : [];
   });
-  const [weatherLoading, setWeatherLoading] = useState(true);
 
   useEffect(() => {
     async function getUserLocation() {
@@ -155,13 +153,13 @@ function GlobeWeather() {
   };
 
   return (
-    <div id="globe-weather-container" style={{ padding: '0 20px 20px' }}>
-      <div id="map-container" ref={mapContainer} style={{ width: '100%', height: '500px', marginBottom: '20px' }} />
-      <div id="content-container" style={{ display: 'flex', justifyContent: 'space-between' }}>
-        <div id="weather-container" style={{ flex: '1', marginRight: '20px' }}>
+    <div style={{ padding: '0 20px 20px' }}> {/* Add padding to the main container */}
+      <div ref={mapContainer} style={{ width: '100%', height: '500px', marginBottom: '20px' }} />
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ flex: '1', marginRight: '20px' }}>
           {weather ? (
             <>
-              <div id="current-weather" className="weather-info" style={{
+              <div className="weather-info" style={{
                 backgroundColor: getWeatherColor(weather.current.weather[0].icon),
                 color: getTextColor(getWeatherColor(weather.current.weather[0].icon)),
                 padding: '20px',
@@ -170,9 +168,9 @@ function GlobeWeather() {
                 maxWidth: '500px',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                 fontFamily: 'Arial, sans-serif',
-                marginBottom: '20px'
+                marginBottom: '20px' // Add margin to separate from forecast
               }}>
-                <div id="weather-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
                   <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
                     Weather in {location}
                   </h2>
@@ -180,7 +178,7 @@ function GlobeWeather() {
                     {new Date().toLocaleDateString('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric' })}
                   </p>
                 </div>
-                <div id="weather-main" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '10px' }}>
                   <img
                     src={getWeatherIcon(weather.current.weather[0].icon)}
                     alt="Weather Icon"
@@ -195,12 +193,12 @@ function GlobeWeather() {
                     </p>
                   </div>
                 </div>
-                <div id="weather-details" style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
+                <div style={{ display: 'flex', fontSize: '14px', justifyContent: 'center', marginTop: '10px' }}>
                   <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Precipitation: {weather.current.rain ? `${weather.current.rain['1h']}mm` : '0mm'}</p>
                   <p style={{ margin: '0 20px 0 0', fontWeight: 'bold' }}>Humidity: {weather.current.main.humidity}%</p>
                   <p style={{ margin: '0', fontWeight: 'bold' }}>Wind: {Math.round(weather.current.wind.speed * 3.6)} km/h</p>
                 </div>
-                <button id="add-favorite-btn" onClick={addToFavorites} style={{
+                <button onClick={addToFavorites} style={{
                   padding: '5px 10px',
                   marginTop: '10px',
                   backgroundColor: '#4CAF50',
@@ -215,23 +213,22 @@ function GlobeWeather() {
               <WeeklyForecast forecast={weather.forecast} />
             </>
           ) : (
-            <div id="weather-placeholder" className="mt-3">
+            <div className="mt-3">
               <p>Click on the map to get weather information for that location.</p>
             </div>
           )}
         </div>
-        <div id="favorites-container" className="favorites" style={{
-          width: '250px',
+        <div className="favorites" style={{
           padding: '10px',
           marginTop: '20px',
           backgroundColor: '#f0f0f0',
           borderRadius: '8px',
           alignSelf: 'flex-start'
         }}>
-          <h3>Favorite Locations</h3>
-          <ul id="favorites-list" style={{ listStyleType: 'none', padding: 0 }}>
+          <h3>Favourite Locations</h3>
+          <ul style={{ listStyleType: 'none', padding: 0 }}>
             {favorites.map((fav, index) => (
-              <li key={index} id={`favorite-item-${index}`} style={{
+              <li key={index} style={{
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',

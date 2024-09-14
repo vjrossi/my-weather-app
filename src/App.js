@@ -9,20 +9,8 @@ function App() {
   return (
     <Router>
       <div className="App">
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-          <ul className="navbar-nav">
-            <li className="nav-item">
-              <Link to="/" className="nav-link">Weather App</Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/globe" className="nav-link">Globe Weather</Link>
-            </li>
-          </ul>
-        </nav>
-
         <Routes>
-          <Route path="/" element={<WeatherApp />} />
-          <Route path="/globe" element={<GlobeWeather />} />
+          <Route path="/" element={<GlobeWeather />} />
         </Routes>
       </div>
     </Router>

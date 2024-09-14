@@ -13,7 +13,7 @@ function WeeklyForecast({ forecast }) {
       boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
       fontFamily: 'Arial, sans-serif',
     }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '15px' }}>Weekly Forecast</h2>
+      <h2 style={{ textAlign: 'center', marginBottom: '15px' }}>5 day forecast</h2>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         {dailyForecasts.map((day, index) => (
           <div key={index} style={{ textAlign: 'center' }}>
