@@ -219,7 +219,9 @@ function GlobeWeather() {
           )}
         </div>
         <div className="favorites" style={{
-          padding: '10px',
+          width: '30%',
+          paddingLeft: '15px',
+          paddingRight: '15px',
           marginTop: '20px',
           backgroundColor: '#f0f0f0',
           borderRadius: '8px',
