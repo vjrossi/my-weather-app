@@ -11,6 +11,7 @@ function GlobeWeather() {
   const map = useRef(null);
   const [weather, setWeather] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [location, setLocation] = useState('');
 
   useEffect(() => {
     async function getUserLocation() {
@@ -74,15 +75,18 @@ function GlobeWeather() {
       if (currentData.cod === '404' || forecastData.cod === '404') {
         console.error('Location not found');
         setWeather(null);
+        setLocation('');
       } else {
         setWeather({
           current: currentData,
           forecast: forecastData
         });
+        setLocation(currentData.name); // Set the location name
       }
     } catch (error) {
       console.error('Error fetching weather data:', error);
       setWeather(null);
+      setLocation('');
     }
   };
 
@@ -138,7 +142,9 @@ function GlobeWeather() {
             fontFamily: 'Arial, sans-serif',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>Weather</h2>
+              <h2 style={{ fontSize: '18px', fontWeight: 'normal', margin: 0 }}>
+                Weather in {location} {/* Display the location name */}
+              </h2>
               <p style={{ fontSize: '14px', margin: 0 }}>
                 {new Date().toLocaleDateString('en-US', { weekday: 'long', hour: 'numeric', minute: 'numeric' })}
               </p>
